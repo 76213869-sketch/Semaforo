@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semáforo Hídrico Inteligente - Cusco</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Personal CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet.js CDN -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet.heat Plugin CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- BARRA LATERAL (SIDEBAR) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/>
+                        <path d="M12 18.5a3.5 3.5 0 0 0 3.5-3.5" stroke-dasharray="3 3"/>
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <h1>Semáforo Hídrico</h1>
+                    <span class="brand-location">Viva el Perú - Cusco</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li class="menu-item active" data-tab="dashboard">
+                        <a href="#dashboard">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9" rx="1" />
+                                <rect x="14" y="3" width="7" height="5" rx="1" />
+                                <rect x="14" y="12" width="7" height="9" rx="1" />
+                                <rect x="3" y="16" width="7" height="5" rx="1" />
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-tab="registrar">
+                        <a href="#registrar">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                            </svg>
+                            <span>Registrar Análisis</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-tab="mapa">
+                        <a href="#mapa">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6l6-3 10 5 2-1v15l-8 4-8-5Z"/>
+                                <path d="M9 3v15"/>
+                                <path d="M15 8v15"/>
+                            </svg>
+                            <span>Mapa Comunitario</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-tab="alertas">
+                        <a href="#alertas">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <span class="menu-text-badge">
+                                <span>Alertas</span>
+                                <span class="badge-alert-count" id="sidebar-alert-count">0</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-tab="historial">
+                        <a href="#historial">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 8v4l3 3"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                            <span>Historial</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-tab="reportes">
+                        <a href="#reportes">
+                            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">CU</div>
+                    <div class="user-info">
+                        <span class="user-name">Comité Universitario</span>
+                        <span class="user-role">Monitoreo Cusco</span>
+                    </div>
+                </div>
+                <div class="db-status">
+                    <span class="status-dot green"></span>
+                    <span>Base de Datos Activa</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <!-- CABECERA (TOPBAR) -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Abrir Menú">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="4" y1="12" x2="20" y2="12"></line>
+                            <line x1="4" y1="6" x2="20" y2="6"></line>
+                            <line x1="4" y1="18" x2="20" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h2 class="section-title" id="page-title">Dashboard Principal</h2>
+                </div>
+                <div class="topbar-right">
+                    <div class="date-display" id="date-display">
+                        Cargando fecha...
+                    </div>
+                    <div class="system-alerts-icon" id="bell-dropdown-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="indicator-dot" id="header-alert-indicator"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CONTENEDORES DE PESTAÑAS (TAB CONTENTS) -->
+            <div class="content-body">
+                
+                <!-- 1. DASHBOARD PRINCIPAL -->
+                <section id="dashboard" class="tab-content active">
+                    <!-- Fila de Tarjetas de Indicadores -->
+                    <div class="metrics-grid">
+                        <div class="metric-card card-total">
+                            <div class="metric-info">
+                                <h3>Total Viviendas</h3>
+                                <span class="metric-value" id="metric-total">24</span>
+                                <span class="metric-sub">Monitoreadas en Viva el Perú</span>
+                            </div>
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green">
+                            <div class="metric-info">
+                                <h3>Agua Apta (Verde)</h3>
+                                <span class="metric-value text-green" id="metric-green">0</span>
+                                <span class="metric-sub" id="pct-green">0% del total</span>
+                            </div>
+                            <div class="metric-icon bg-green-light">
+                                <svg class="text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card card-yellow">
+                            <div class="metric-info">
+                                <h3>En Observación (Amarillo)</h3>
+                                <span class="metric-value text-yellow" id="metric-yellow">0</span>
+                                <span class="metric-sub" id="pct-yellow">0% del total</span>
+                            </div>
+                            <div class="metric-icon bg-yellow-light">
+                                <svg class="text-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card card-red">
+                            <div class="metric-info">
+                                <h3>Crítico (Rojo)</h3>
+                                <span class="metric-value text-red" id="metric-red">0</span>
+                                <span class="metric-sub" id="pct-red">0% del total</span>
+                            </div>
+                            <div class="metric-icon bg-red-light">
+                                <svg class="text-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card card-alerts">
+                            <div class="metric-info">
+                                <h3>Alertas Activas</h3>
+                                <span class="metric-value" id="metric-alerts">0</span>
+                                <span class="metric-sub text-red font-semibold" id="crit-alerts-sub">0 Críticas</span>
+                            </div>
+                            <div class="metric-icon bg-blue-light">
+                                <svg class="text-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card card-avg">
+                            <div class="metric-info">
+                                <h3>Promedios Generales</h3>
+                                <div class="metric-double">
+                                    <div>
+                                        <span class="metric-value-small" id="avg-ph">7.20</span>
+                                        <span class="metric-label">pH Prom.</span>
+                                    </div>
+                                    <div class="border-left">
+                                        <span class="metric-value-small" id="avg-cloro">0.95</span>
+                                        <span class="metric-label">Cloro Prom.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="metric-icon bg-cyan-light">
+                                <svg class="text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila de Gráficos -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Evolución Semanal del pH</h3>
+                                <span class="chart-legend-badge">Valores promedio</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="phChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Evolución Semanal del Cloro</h3>
+                                <span class="chart-legend-badge">mg/L promedio</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="cloroChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Distribución de Calidad</h3>
+                                <span class="chart-legend-badge">Estado actual</span>
+                            </div>
+                            <div class="chart-container-donut">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila Inferior: Actividad Reciente y Últimas Mediciones -->
+                    <div class="bottom-grid">
+                        <!-- Últimas Mediciones -->
+                        <div class="data-card table-card">
+                            <div class="card-header">
+                                <h3>Últimas Mediciones de Calidad</h3>
+                                <button class="btn btn-text btn-view-all" data-target-tab="historial">Ver Historial</button>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Vivienda</th>
+                                            <th>pH</th>
+                                            <th>Cloro (mg/L)</th>
+                                            <th>Fecha</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="latest-measurements-tbody">
+                                        <!-- Se carga por JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Actividad Reciente -->
+                        <div class="data-card activity-card">
+                            <div class="card-header">
+                                <h3>Actividad Reciente</h3>
+                                <button class="btn btn-text btn-view-all" data-target-tab="alertas">Ver Alertas</button>
+                            </div>
+                            <div class="activity-timeline" id="recent-activity-list">
+                                <!-- Se carga por JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. REGISTRAR ANÁLISIS -->
+                <section id="registrar" class="tab-content">
+                    <div class="register-grid">
+                        <!-- Formulario -->
+                        <div class="form-card card shadow-soft">
+                            <div class="card-header border-bottom">
+                                <h3>Nueva Evaluación de Calidad de Agua</h3>
+                                <p class="card-subtitle">Ingresa los datos físico-químicos recolectados en la vivienda.</p>
+                            </div>
+                            <form id="form-analisis" class="form-content">
+                                <div class="form-group">
+                                    <label for="reg-vivienda">Vivienda Seleccionada *</label>
+                                    <select id="reg-vivienda" required>
+                                        <option value="" disabled selected>Selecciona una vivienda...</option>
+                                        <!-- Se carga por JS -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reg-responsable">Responsable de Muestreo / Propietario *</label>
+                                    <input type="text" id="reg-responsable" placeholder="Nombre completo" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="reg-fecha">Fecha del Análisis *</label>
+                                        <input type="date" id="reg-fecha" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <!-- Espacio reservado para alineación o detalles extra -->
+                                    </div>
+                                </div>
+
+                                <hr class="form-divider">
+
+                                <!-- Slider pH -->
+                                <div class="form-group">
+                                    <div class="slider-header">
+                                        <label for="reg-ph-range">Nivel de Potencial de Hidrógeno (pH) *</label>
+                                        <span class="value-badge bg-blue" id="ph-badge-val">7.0</span>
+                                    </div>
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="reg-ph-range" min="0" max="14" step="0.1" value="7.0" class="styled-slider">
+                                        <div class="number-input-sync">
+                                            <input type="number" id="reg-ph-num" min="0" max="14" step="0.1" value="7.0" required>
+                                        </div>
+                                    </div>
+                                    <span class="input-help">Rango óptimo para consumo: 6.5 a 8.5 pH.</span>
+                                </div>
+
+                                <!-- Slider Cloro -->
+                                <div class="form-group">
+                                    <div class="slider-header">
+                                        <label for="reg-cloro-range">Cloro Residual Libre (mg/L) *</label>
+                                        <span class="value-badge bg-blue" id="cloro-badge-val">1.00</span>
+                                    </div>
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="reg-cloro-range" min="0" max="5" step="0.05" value="1.00" class="styled-slider">
+                                        <div class="number-input-sync">
+                                            <input type="number" id="reg-cloro-num" min="0" max="5" step="0.05" value="1.00" required>
+                                        </div>
+                                    </div>
+                                    <span class="input-help">Rango óptimo para consumo: 0.5 a 1.5 mg/L.</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reg-observaciones">Observaciones / Detalles de Campo</label>
+                                    <textarea id="reg-observaciones" rows="3" placeholder="Describe anomalías en el olor, color, turbidez, o comentarios del propietario..."></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="btn-limpiar-form">Limpiar Campos</button>
+                                    <button type="submit" class="btn btn-primary" id="btn-guardar-analisis">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                            <polyline points="17 21 17 13 7 13 7 21"/>
+                                            <polyline points="7 3 7 8 15 8"/>
+                                        </svg>
+                                        Evaluar y Guardar Agua
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Panel de Vista Previa del Estado e Historial de la Vivienda -->
+                        <div class="preview-card card shadow-soft">
+                            <div class="card-header border-bottom">
+                                <h3>Evaluación en Tiempo Real</h3>
+                                <p class="card-subtitle">Clasificación instantánea basada en reglas de salud pública.</p>
+                            </div>
+                            <div class="preview-body" id="realtime-preview-panel">
+                                <!-- Contenido Dinámico de Previsualización -->
+                                <div class="preview-badge-status" id="preview-badge-status">
+                                    <div class="status-indicator-ring green">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                    <h4 id="preview-status-title">AGUA APTA PARA CONSUMO</h4>
+                                    <p id="preview-status-desc">Los valores de pH y Cloro Residual se encuentran dentro del rango normativo de salud pública.</p>
+                                </div>
+
+                                <div class="preview-parameters-grid">
+                                    <div class="preview-param-card" id="param-card-ph">
+                                        <span class="param-title">pH del Agua</span>
+                                        <span class="param-val" id="preview-ph-val">7.0</span>
+                                        <span class="param-status text-green" id="preview-ph-status">Óptimo (6.5 - 8.5)</span>
+                                    </div>
+                                    <div class="preview-param-card" id="param-card-cloro">
+                                        <span class="param-title">Cloro Residual</span>
+                                        <span class="param-val" id="preview-cloro-val">1.00 mg/L</span>
+                                        <span class="param-status text-green" id="preview-cloro-status">Óptimo (0.5 - 1.5)</span>
+                                    </div>
+                                </div>
+
+                                <div class="preview-instructions" id="preview-recommendations">
+                                    <h5>Recomendaciones Técnicas:</h5>
+                                    <ul>
+                                        <li>Mantener el plan de dosificación actual de cloro en el reservorio de la comunidad.</li>
+                                        <li>Monitorear la vivienda según el cronograma de control rutinario establecido.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. MAPA COMUNITARIO -->
+                <section id="mapa" class="tab-content">
+                    <!-- Fila Superior de KPIs del Mapa -->
+                    <div class="map-kpi-grid">
+                        <div class="map-kpi-card">
+                            <div class="kpi-icon-wrapper bg-blue-light text-blue">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                            </div>
+                            <div class="kpi-details">
+                                <span class="kpi-title">Viviendas Totales</span>
+                                <span class="kpi-value" id="map-kpi-total">24</span>
+                            </div>
+                        </div>
+                        <div class="map-kpi-card">
+                            <div class="kpi-icon-wrapper bg-green-light text-green">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            <div class="kpi-details">
+                                <span class="kpi-title">Viviendas Aptas</span>
+                                <span class="kpi-value text-green" id="map-kpi-green">12</span>
+                            </div>
+                        </div>
+                        <div class="map-kpi-card">
+                            <div class="kpi-icon-wrapper bg-yellow-light text-yellow">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                            <div class="kpi-details">
+                                <span class="kpi-title">En Observación</span>
+                                <span class="kpi-value text-yellow" id="map-kpi-yellow">8</span>
+                            </div>
+                        </div>
+                        <div class="map-kpi-card">
+                            <div class="kpi-icon-wrapper bg-red-light text-red">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                            </div>
+                            <div class="kpi-details">
+                                <span class="kpi-title">Viviendas Críticas</span>
+                                <span class="kpi-value text-red" id="map-kpi-red">4</span>
+                            </div>
+                        </div>
+                        <div class="map-kpi-card">
+                            <div class="kpi-icon-wrapper bg-red-light text-red">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                </svg>
+                            </div>
+                            <div class="kpi-details">
+                                <span class="kpi-title">Alertas Activas</span>
+                                <span class="kpi-value text-red" id="map-kpi-alerts">12</span>
+                            </div>
+                        </div>
+                        <!-- KPI Destacado: Índice General de Calidad -->
+                        <div class="map-kpi-card kpi-highlight-card" id="kpi-water-index-card">
+                            <div class="kpi-details-full">
+                                <div class="kpi-flex-header">
+                                    <span class="kpi-title">INDICE DE CALIDAD DE AGUA</span>
+                                    <span class="index-quality-badge green" id="map-index-badge">Excelente</span>
+                                </div>
+                                <div class="index-display-row">
+                                    <span class="index-percent-value" id="map-index-value">95%</span>
+                                    <div class="index-progress-container">
+                                        <div class="index-progress-bar" id="map-index-progress" style="width: 95%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="map-layout">
+                        <!-- Rediseño Filtros y Leyendas Side Panel -->
+                        <div class="map-sidebar card shadow-soft">
+                            <div class="card-header border-bottom">
+                                <h3>Filtros Especializados</h3>
+                                <p class="card-subtitle">Control y visualización de capas de monitoreo hídrico.</p>
+                            </div>
+                            
+                            <!-- Tarjetas Premium de Filtros -->
+                            <div class="map-premium-filters">
+                                <div class="premium-filter-card active" data-map-filter="todos">
+                                    <div class="pf-card-left">
+                                        <div class="pf-circle bg-gray-light">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <path d="M8 12h8"/>
+                                            </svg>
+                                        </div>
+                                        <div class="pf-info">
+                                            <span class="pf-title">Todas las Viviendas</span>
+                                            <span class="pf-desc">Ver universo monitoreado</span>
+                                        </div>
+                                    </div>
+                                    <span class="pf-count bg-gray-light text-secondary" id="map-premium-cnt-all">24</span>
+                                </div>
+                                
+                                <div class="premium-filter-card text-green" data-map-filter="verde">
+                                    <div class="pf-card-left">
+                                        <div class="pf-circle bg-green-light">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"/>
+                                            </svg>
+                                        </div>
+                                        <div class="pf-info">
+                                            <span class="pf-title">🟢 Agua Segura</span>
+                                            <span class="pf-desc">Consumo apto permitido</span>
+                                        </div>
+                                    </div>
+                                    <span class="pf-count bg-green-light" id="map-premium-cnt-green">12</span>
+                                </div>
+
+                                <div class="premium-filter-card text-yellow" data-map-filter="amarillo">
+                                    <div class="pf-card-left">
+                                        <div class="pf-circle bg-yellow-light">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                            </svg>
+                                        </div>
+                                        <div class="pf-info">
+                                            <span class="pf-title">🟡 Rev. Preventiva</span>
+                                            <span class="pf-desc">Requiere seguimiento</span>
+                                        </div>
+                                    </div>
+                                    <span class="pf-count bg-yellow-light" id="map-premium-cnt-yellow">8</span>
+                                </div>
+
+                                <div class="premium-filter-card text-red" data-map-filter="rojo">
+                                    <div class="pf-card-left">
+                                        <div class="pf-circle bg-red-light">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                                <line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                        </div>
+                                        <div class="pf-info">
+                                            <span class="pf-title">🔴 Riesgo Crítico</span>
+                                            <span class="pf-desc">No apta para consumo</span>
+                                        </div>
+                                    </div>
+                                    <span class="pf-count bg-red-light text-red" id="map-premium-cnt-red">4</span>
+                                </div>
+                            </div>
+
+                            <hr class="map-sidebar-divider">
+
+                            <!-- Controles del Heatmap y Capas -->
+                            <div class="gis-layers-control">
+                                <h4>Controles de Capas Geográficas</h4>
+                                <p class="card-subtitle" style="margin-bottom: 12px;">Visualizaciones avanzadas de riesgo sanitario.</p>
+                                
+                                <div class="heatmap-toggle-container">
+                                    <button class="btn btn-secondary btn-small btn-full-width active" id="btn-toggle-heatmap">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                        </svg>
+                                        Ocultar Heatmap
+                                    </button>
+                                </div>
+
+                                <div class="view-modes-grid">
+                                    <button class="btn btn-secondary btn-small" id="btn-mode-markers" title="Vista con Marcadores Simples">Vista Marcadores</button>
+                                    <button class="btn btn-secondary btn-small" id="btn-mode-heatmap" title="Vista de Mapa de Calor de Riesgo">Vista Heatmap</button>
+                                    <button class="btn btn-secondary btn-small active" id="btn-mode-combined" title="Vista Combinada Marcadores + Calor">Vista Combinada</button>
+                                </div>
+                            </div>
+
+                            <hr class="map-sidebar-divider">
+
+                            <!-- Leyenda del Heatmap y Calidad -->
+                            <div class="map-legend">
+                                <h4>Leyenda del Heatmap de Riesgo</h4>
+                                <div class="heatmap-legend-bar"></div>
+                                <div class="heatmap-legend-labels">
+                                    <span>🟢 Riesgo Bajo</span>
+                                    <span>🟡 Riesgo Medio</span>
+                                    <span>🔴 Riesgo Alto</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenedor del Mapa Leaflet -->
+                        <div class="map-wrapper card shadow-soft">
+                            <div id="map-view"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. ALERTAS -->
+                <section id="alertas" class="tab-content">
+                    <div class="alerts-layout">
+                        <!-- Cabecera y Filtros de Alertas -->
+                        <div class="filter-bar card shadow-soft">
+                            <div class="alert-filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                    <input type="text" id="alert-search" placeholder="Buscar por vivienda o responsable...">
+                                </div>
+                                <div class="filter-buttons">
+                                    <button class="btn btn-filter active" data-alert-filter="all">Todas</button>
+                                    <button class="btn btn-filter text-red font-semibold" data-alert-filter="critica">Críticas</button>
+                                    <button class="btn btn-filter text-yellow font-semibold" data-alert-filter="preventiva">Preventivas</button>
+                                    <button class="btn btn-filter text-blue font-semibold" data-alert-filter="informativa">Informativas</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Alertas -->
+                        <div class="alerts-container" id="alerts-cards-list">
+                            <!-- Se carga dinámicamente mediante JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. HISTORIAL -->
+                <section id="historial" class="tab-content">
+                    <div class="history-layout card shadow-soft">
+                        <div class="card-header border-bottom flex-between">
+                            <div>
+                                <h3>Historial de Evaluaciones Hídricas</h3>
+                                <p class="card-subtitle">Listado general de todas las mediciones ordenadas cronológicamente.</p>
+                            </div>
+                            <!-- Filtros y buscador integrados -->
+                            <div class="history-toolbar">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                    <input type="text" id="history-search" placeholder="Buscar vivienda, responsable...">
+                                </div>
+                                <select id="history-filter-status">
+                                    <option value="todos">Todos los Estados</option>
+                                    <option value="verde">Apto (Verde)</option>
+                                    <option value="amarillo">Observación (Amarillo)</option>
+                                    <option value="rojo">Crítico (Rojo)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-container history-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="fecha">Fecha <span class="sort-icon">⇅</span></th>
+                                        <th class="sortable" data-sort="vivienda">Vivienda <span class="sort-icon">⇅</span></th>
+                                        <th class="sortable" data-sort="responsable">Responsable <span class="sort-icon">⇅</span></th>
+                                        <th class="sortable" data-sort="ph">pH <span class="sort-icon">⇅</span></th>
+                                        <th class="sortable" data-sort="cloro">Cloro (mg/L) <span class="sort-icon">⇅</span></th>
+                                        <th class="sortable" data-sort="estado">Estado <span class="sort-icon">⇅</span></th>
+                                        <th>Observaciones</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-tbody">
+                                    <!-- Cargado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-pagination">
+                            <span class="pagination-info" id="pagination-info">Mostrando 1-10 de 50 registros</span>
+                            <div class="pagination-buttons">
+                                <button class="btn btn-small" id="btn-prev-page">Anterior</button>
+                                <div class="page-numbers-container" id="page-numbers-container">
+                                    <!-- Números de página -->
+                                </div>
+                                <button class="btn btn-small" id="btn-next-page">Siguiente</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. REPORTES -->
+                <section id="reportes" class="tab-content">
+                    <div class="reports-grid">
+                        <!-- Formulario de Configuración del Reporte -->
+                        <div class="report-options-card card shadow-soft">
+                            <div class="card-header border-bottom">
+                                <h3>Generación de Reportes Ejecutivos</h3>
+                                <p class="card-subtitle">Configura los parámetros para los reportes oficiales.</p>
+                            </div>
+                            <div class="card-body form-content">
+                                <div class="form-group">
+                                    <label>Título del Reporte PDF</label>
+                                    <input type="text" id="report-title" value="Reporte Ejecutivo de Calidad de Agua - Viva el Perú">
+                                </div>
+                                <div class="form-group">
+                                    <label>Entidad Evaluadora</label>
+                                    <input type="text" id="report-entity" value="Municipalidad Distrital - Comité de Salud y Agua">
+                                </div>
+                                <div class="form-group">
+                                    <label>Responsable del Informe</label>
+                                    <input type="text" id="report-author" value="Ing. Sanitario de Guardia">
+                                </div>
+                                <div class="form-group">
+                                    <label>Secciones a Incluir en el PDF</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="rep-inc-stats" checked>
+                                            <span>Resumen de Estadísticas Clave</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="rep-inc-viviendas" checked>
+                                            <span>Detalle de las 24 Viviendas Monitoreadas</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="rep-inc-alerts" checked>
+                                            <span>Alertas Activas y Críticas</span>
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="rep-inc-history" checked>
+                                            <span>Historial Completo de Muestreos</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="report-download-actions">
+                                    <button class="btn btn-primary btn-large btn-full-width" id="btn-generate-pdf">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                            <polyline points="10 9 9 9 8 9"/>
+                                        </svg>
+                                        Generar Reporte en PDF Profesional (jsPDF)
+                                    </button>
+                                    <button class="btn btn-secondary btn-large btn-full-width" id="btn-generate-csv">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="7 10 12 15 17 10"/>
+                                            <line x1="12" y1="15" x2="12" y2="3"/>
+                                        </svg>
+                                        Exportar Base de Datos a CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen Informativo para Exposición -->
+                        <div class="report-preview-info card shadow-soft">
+                            <div class="card-header border-bottom">
+                                <h3>Información Institucional</h3>
+                                <p class="card-subtitle">Detalles clave para la exposición universitaria de ingeniería o salud pública.</p>
+                            </div>
+                            <div class="card-body reports-info-body">
+                                <div class="info-block">
+                                    <h4>Normativa Peruana Aplicada</h4>
+                                    <p>Este sistema implementa las reglas del <strong>Reglamento de la Calidad del Agua para Consumo Humano (D.S. N° 031-2010-SA)</strong> de DIGESA, Perú:</p>
+                                    <ul>
+                                        <li><strong>Cloro Residual Libre:</strong> Entre 0.5 y 1.5 mg/L para garantizar la desinfección frente a bacterias y virus.</li>
+                                        <li><strong>pH (Potencial de Hidrógeno):</strong> Rango óptimo entre 6.5 y 8.5. pH extremos causan corrosión o incrustación en tuberías y afectan el sabor.</li>
+                                    </ul>
+                                </div>
+                                <div class="info-block border-top">
+                                    <h4>Metodología de Monitoreo - Viva el Perú</h4>
+                                    <p>Las coordenadas y viviendas simulan la topografía y distribución de la urbanización **Viva el Perú** en el distrito de Santiago, Cusco. La simulación permite a los estudiantes y evaluadores ver la propagación espacial de un posible brote de contaminación o fallas en el sistema de cloración comunitaria.</p>
+                                </div>
+                                <div class="info-block border-top">
+                                    <h4>Estructura del PDF Exportado</h4>
+                                    <p>El reporte de jsPDF está diseñado programáticamente para simular una hoja membretada municipal de Cusco, con tablas organizadas de indicadores generales y desgloses de alertas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE NOTIFICACIÓN DE ÉXITO O DETALLE -->
+    <div class="modal-overlay" id="notification-modal">
+        <div class="modal-card card">
+            <div class="modal-header border-bottom">
+                <h3 id="modal-title">Resultado de Evaluación</h3>
+                <button class="btn-close-modal" id="btn-close-modal" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body-content">
+                <!-- Se inyecta por JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btn-modal-accept">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de aplicación -->
+    <script src="app.js"></script>
+</body>
+</html>
